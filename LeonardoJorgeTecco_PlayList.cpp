@@ -17,19 +17,21 @@ typedef struct Musica {
 
 int contadorCodigoArtista = 1;
 
-int verificarArtistaExistePorNome(char *nomeArtista) {
-	FILE *fp = fopen("artistas.dat", "ab+");
+int verificarArtistaExistePorCodigo(int codigoArtista) {
+	FILE *fp = fopen("artistas.dat", "rb");
 	Artista artista;
+	int posicaoArtista = -1;
 	
 	while (fread(&artista, sizeof(Artista), 1, fp) == 1) {
-		if (strcmp(nomeArtista, artista.nome) == 0) {
+		if (codigoArtista == artista.codigo) {
+			posicaoArtista = ftell(fp) - sizeof(Artista);
 			fclose(fp);
-			return 1;
+			return posicaoArtista;
 		}
 	}
 	
 	fclose(fp);
-	return 0;
+	return -1;
 }
 
 void listarArtistas() {
@@ -52,27 +54,29 @@ void listarArtistas() {
 void cadastrarArtista() {
 	FILE *fp = fopen("artistas.dat", "ab+");
 	Artista artista;
-	int artistaCadastrado = 0;
+	int posicaoArtista = -1;
 	
 	system("cls");
 	
 	puts("# CADASTRAR ARTISTAS\n\n");
 	
-	artista.codigo = contadorCodigoArtista++;
-	
 	do {
-		printf("NOME: ");
+		printf("CODIGO: ");
 		fflush(stdin);
-		gets(artista.nome);
-		strupr(artista.nome);
-	
-		artistaCadastrado = verificarArtistaExistePorNome(artista.nome);
+		scanf("%d", &artista.codigo);
+
+		posicaoArtista = verificarArtistaExistePorCodigo(artista.codigo);
 		
-		if (artistaCadastrado == 1) {
+		if (posicaoArtista != -1) {
 			puts("\nARTISTA JA CADASTRADO! CADASTRE NOVAMENTE!\n");
 		}
-	} while(artistaCadastrado == 1);
+	} while(posicaoArtista != -1);
 	
+	printf("NOME: ");
+	fflush(stdin);
+	gets(artista.nome);
+	strupr(artista.nome);
+
 	puts("\nARTISTA CADASTRADO!\n");
 	
 	fwrite(&artista, sizeof(Artista), 1, fp);
@@ -85,6 +89,7 @@ void consultarArtista() {
 	FILE *fp = fopen("artistas.dat", "rb");
 	Artista artista;
 	char nomeArtista[50];
+	int achouArtistas = 0;
 	
 	system("cls");
 	
@@ -97,17 +102,18 @@ void consultarArtista() {
 	
 	while (fread(&artista, sizeof(Artista), 1, fp) == 1) {
 		if (strcmp(nomeArtista, artista.nome) == 0) {
+			achouArtistas = 1;
+
 			printf("\nCODIGO: %d", artista.codigo);
 			printf("\nNOME: %s\n\n", artista.nome);
-			
-			system("pause");
-			fclose(fp);
-			return;
 		}
+	}
+
+	if (achouArtistas == 0) {
+		puts("\nARTISTA NAO ENCONTRADO!\n");
 	}
 	
 	system("pause");
-	puts("ARTISTA NAO ENCONTRADO!");
 	fclose(fp);
 	return;
 }
@@ -115,7 +121,7 @@ void consultarArtista() {
 void alterarArtista() {
 	FILE *fp = fopen("artistas.dat", "rb+");
 	Artista artista;
-	int codigoArtista, artistaCadastrado, achouArtista;
+	int codigoArtista, posicaoArtista = -1;
 	char nomeArtista[50];
 	
 	system("cls");
@@ -126,39 +132,27 @@ void alterarArtista() {
 	fflush(stdin);
 	scanf("%d", &codigoArtista);
 	
-	while (fread(&artista, sizeof(Artista), 1, fp) == 1) {
-		if (codigoArtista == artista.codigo) {
-			achouArtista = 1;
-			break;
-		}
-	}
-	
-	if (achouArtista == 0) {
+	posicaoArtista = verificarArtistaExistePorCodigo(codigoArtista);
+
+	if (posicaoArtista == -1) {
 		puts("\nARTISTA NAO ENCONTRADO!\n");
 		system("pause");
 		fclose(fp);
 		return;
 	}
-	
+
+	fseek(fp, posicaoArtista, SEEK_SET);
+	fread(&artista, sizeof(Artista), 1, fp);
+
 	printf("\nCODIGO: %d", artista.codigo);
 	printf("\nNOME: %s\n\n", artista.nome);
 	
-	do {
-		printf("NOVO NOME: ");
-		fflush(stdin);
-		gets(nomeArtista);
-		strupr(nomeArtista);
-		
-		artistaCadastrado = verificarArtistaExistePorNome(nomeArtista);
-		
-		if (artistaCadastrado == 1) {
-			puts("\nARTISTA JA CADASTRADO! ALTERE NOVAMENTE!\n");
-		}
-	} while(artistaCadastrado == 1);
-	
-	strcpy(artista.nome, nomeArtista);
-	
-	fseek(fp, -sizeof(Artista), SEEK_CUR);
+	printf("NOVO NOME: ");
+	fflush(stdin);
+	gets(artista.nome);
+	strupr(artista.nome);
+
+	fseek(fp, posicaoArtista, SEEK_SET);
 	fwrite(&artista, sizeof(Artista), 1, fp);
 	fclose(fp);
 
