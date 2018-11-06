@@ -15,8 +15,6 @@ typedef struct Musica {
 	char exc;
 };
 
-int contadorCodigoArtista = 1;
-
 int verificarArtistaExistePorCodigo(int codigoArtista) {
 	FILE *fp = fopen("artistas.dat", "rb");
 	Artista artista;
@@ -32,6 +30,110 @@ int verificarArtistaExistePorCodigo(int codigoArtista) {
 	
 	fclose(fp);
 	return -1;
+}
+
+int verificarMusicaExistePorTitulo(char *tituloMusica) {
+	FILE *fp = fopen("musicas.dat", "rb");
+	Musica musica;
+	int posicaoMusica = -1;
+	
+	while (fread(&musica, sizeof(Musica), 1, fp) == 1) {
+		if (strcmp(musica.titulo, tituloMusica) == 0) {
+			posicaoMusica = ftell(fp) - sizeof(Artista);
+			fclose(fp);
+			return posicaoMusica;
+		}
+	}
+	
+	fclose(fp);
+	return -1;
+}
+
+char* retornaNomeArtistaPorCodigo(int codigoArtista) {
+	FILE *fp = fopen("artistas.dat", "rb");
+	Artista artista;
+	
+	while (fread(&artista, sizeof(Artista), 1, fp) == 1) {
+		if (codigoArtista == artista.codigo) {
+//			printf("ASASAS %s\n\n", artista.nome);
+			fclose(fp);
+			return artista.nome;
+		}
+	}
+	
+	fclose(fp);
+	return '\0';
+}
+
+void cadastrarMusica() {
+	FILE *fp = fopen("musicas.dat", "ab+");
+	Musica musica;
+	int posicaoMusica = -1;
+	int posicaoArtista = -1;
+	
+	system("cls");
+	
+	puts("# CADASTRAR MUSICAS\n\n");
+	
+	do {
+		printf("TITULO: ");
+		fflush(stdin);
+		gets(musica.titulo);
+		strupr(musica.titulo);
+
+		posicaoMusica = verificarMusicaExistePorTitulo(musica.titulo);
+
+		if (posicaoMusica != -1) {
+			puts("\nMUSICA JA CADASTRADA! CADASTRE NOVAMENTE!\n");
+		}
+	} while (posicaoMusica != -1);
+	
+	printf("ESTILO: ");
+	fflush(stdin);
+	gets(musica.estilo);
+	strupr(musica.estilo);
+	
+	do {
+		printf("CODIGO DO ARTISTA: ");
+		fflush(stdin);
+		scanf("%d", &musica.codArtista);
+		
+		posicaoArtista = verificarArtistaExistePorCodigo(musica.codArtista);
+		
+		if (posicaoArtista == -1) {
+			puts("\nARTISTA NAO ENCONTRADO! DIGITE NOVAMENTE!\n");
+		}
+	} while (posicaoArtista == -1);
+	
+	musica.exc = ' ';
+
+	puts("\nMUSICA CADASTRADA!\n");
+	
+	fwrite(&musica, sizeof(Musica), 1, fp);
+	fclose(fp);
+	
+	system("pause");
+}
+
+void listarMusicas() {
+	FILE *fp = fopen("musicas.dat", "rb");
+	Musica musica;
+	
+	system("cls");
+	
+	puts("# LISTAGEM DE MUSICAS\n\n");
+	
+	while (fread(&musica, sizeof(Musica), 1, fp) == 1) {
+		char nomeArtista;
+		strcpy(nomeArtista, retornaNomeArtistaPorCodigo(musica.codArtista));
+		printf("TITULO: %s\n", musica.titulo);
+		printf("ESTILO: %s\n", musica.estilo);
+		printf("NOME ARTISTA: %s\n", nomeArtista);
+		printf("EXC: %c\n\n", musica.exc);
+	}
+	
+	fclose(fp);
+	system("pause");
 }
 
 void listarArtistas() {
@@ -214,8 +316,10 @@ void menuMusicas() {
 		
 		switch (opcao) {
 			case 1:
+				cadastrarMusica();
 				break;
 			case 2:
+				listarMusicas();
 				break;
 			case 3:
 				break;
