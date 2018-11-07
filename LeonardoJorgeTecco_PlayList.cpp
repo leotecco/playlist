@@ -173,6 +173,44 @@ void consultarMusica() {
 	return;
 }
 
+void excluirMusica() {
+	FILE *fp = fopen("musicas.dat", "rb");
+	Musica musica;
+	char tituloMusica[50];
+	int posicaoMusica = -1;
+	
+	system("cls");
+	
+	puts("# EXCLUIR MUSICA\n\n");
+	
+	printf("TITULO: ");
+	fflush(stdin);
+	gets(tituloMusica);
+	strupr(tituloMusica);
+	
+	posicaoMusica = verificarMusicaExistePorTitulo(tituloMusica);
+
+	if (posicaoMusica == -1) {
+		puts("\nMUSICA NAO ENCONTRADA!\n");
+		system("pause");
+		fclose(fp);
+		return;
+	}
+
+	fseek(fp, posicaoMusica, SEEK_SET);
+	fread(&musica, sizeof(Musica), 1, fp);
+
+	musica.exc = '*';
+
+	fseek(fp, posicaoMusica, SEEK_SET);
+	fwrite(&musica, sizeof(Musica), 1, fp);
+
+	printf("\nMUSICA EXCLUIDA COM SUCESSO! %c\n", musica.exc);
+
+	fclose(fp);
+	system("pause");
+}
+
 /**** ARTISTA ****/
 
 void listarArtistas() {
@@ -364,6 +402,7 @@ void menuMusicas() {
 				consultarMusica();
 				break;
 			case 4:
+				excluirMusica();
 				break;
 		}
 		
