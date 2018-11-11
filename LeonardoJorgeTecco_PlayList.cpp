@@ -61,6 +61,48 @@ Artista retornaArtistaPorCodigo(int codigoArtista) {
 	return artista;
 }
 
+float verificarPorcentagemDeMusicasExcluidas() {
+	FILE *fp;
+	Musica musica;
+	float quantidadeDeMusicas = 0, quantidadeDeMusicasExcluidas = 0;
+
+	fp = fopen("musicas.dat", "rb");
+
+	while (fread(&musica, sizeof(Musica), 1, fp) == 1) {
+		quantidadeDeMusicas++;
+
+		if (musica.exc == '*') {
+			quantidadeDeMusicasExcluidas++;
+		}
+	}
+
+	fclose(fp);
+
+	printf("\n\nOI: %f\n\n", quantidadeDeMusicasExcluidas / quantidadeDeMusicas);
+
+	return (quantidadeDeMusicasExcluidas / quantidadeDeMusicas) * 100;
+}
+
+void reorganizarArquivoDeMusicas() {
+	FILE *fp, *novo;
+	Musica musica;
+
+	novo = fopen("musicas.bak", "wb");
+	fp = fopen("musicas.dat", "rb");
+
+	while (fread(&musica, sizeof(Musica), 1, fp) == 1) {
+		if (musica.exc != '*') {
+			fwrite(&musica, sizeof(Musica),1, novo);
+		}
+	}
+
+	fclose(fp);
+	fclose(novo);
+
+	remove("musicas.dat");
+	rename("musicas.bak", "musicas.dat");
+}
+
 /**** MUSICA ****/
 
 void cadastrarMusica() {
@@ -131,7 +173,7 @@ void listarMusicas() {
 			Artista artista = retornaArtistaPorCodigo(musica.codArtista);
 			printf("TITULO: %s\n", musica.titulo);
 			printf("ESTILO: %s\n", musica.estilo);
-			printf("NOME ARTISTA: %s\n", artista.nome);
+			printf("NOME ARTISTA: %s\n\n", artista.nome);
 		}
 	}
 	
@@ -179,6 +221,7 @@ void excluirMusica() {
 	Musica musica;
 	char tituloMusica[50];
 	int posicaoMusica = -1;
+	float porcentagemDeMusicasExcluidas;
 	
 	system("cls");
 	
@@ -209,8 +252,18 @@ void excluirMusica() {
 	printf("\nMUSICA EXCLUIDA COM SUCESSO!\n");
 
 	fclose(fp);
+
+	porcentagemDeMusicasExcluidas = verificarPorcentagemDeMusicasExcluidas();
+	
+	printf("PORCENTAGEM: %d\n", porcentagemDeMusicasExcluidas);
+	// if (porcentagemDeMusicasExcluidas > 20) {
+
+	// 	reorganizarArquivoDeMusicas();
+	// }
+
 	system("pause");
 }
+
 
 /**** ARTISTA ****/
 
