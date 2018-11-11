@@ -38,8 +38,8 @@ int verificarMusicaExistePorTitulo(char *tituloMusica) {
 	int posicaoMusica = -1;
 	
 	while (fread(&musica, sizeof(Musica), 1, fp) == 1) {
-		if (strcmp(musica.titulo, tituloMusica) == 0) {
-			posicaoMusica = ftell(fp) - sizeof(Artista);
+		if (strcmp(musica.titulo, tituloMusica) == 0 && musica.exc != '*') {
+			posicaoMusica = ftell(fp) - sizeof(Musica);
 			fclose(fp);
 			return posicaoMusica;
 		}
@@ -127,11 +127,12 @@ void listarMusicas() {
 	puts("# LISTAGEM DE MUSICAS\n\n");
 	
 	while (fread(&musica, sizeof(Musica), 1, fp) == 1) {
-		Artista artista = retornaArtistaPorCodigo(musica.codArtista);
-		printf("TITULO: %s\n", musica.titulo);
-		printf("ESTILO: %s\n", musica.estilo);
-		printf("NOME ARTISTA: %s\n", artista.nome);
-		printf("EXC: %c\n\n", musica.exc);
+		if (musica.exc != '*') {
+			Artista artista = retornaArtistaPorCodigo(musica.codArtista);
+			printf("TITULO: %s\n", musica.titulo);
+			printf("ESTILO: %s\n", musica.estilo);
+			printf("NOME ARTISTA: %s\n", artista.nome);
+		}
 	}
 	
 	fclose(fp);
@@ -154,7 +155,7 @@ void consultarMusica() {
 	strupr(tituloMusica);
 	
 	while (fread(&musica, sizeof(Musica), 1, fp) == 1) {
-		if (strcmp(tituloMusica, musica.titulo) == 0) {
+		if (strcmp(tituloMusica, musica.titulo) == 0 && musica.exc != '*') {
 			achouMusica = 1;
 
 			Artista artista = retornaArtistaPorCodigo(musica.codArtista);
@@ -174,7 +175,7 @@ void consultarMusica() {
 }
 
 void excluirMusica() {
-	FILE *fp = fopen("musicas.dat", "rb");
+	FILE *fp = fopen("musicas.dat", "rb+");
 	Musica musica;
 	char tituloMusica[50];
 	int posicaoMusica = -1;
@@ -205,7 +206,7 @@ void excluirMusica() {
 	fseek(fp, posicaoMusica, SEEK_SET);
 	fwrite(&musica, sizeof(Musica), 1, fp);
 
-	printf("\nMUSICA EXCLUIDA COM SUCESSO! %c\n", musica.exc);
+	printf("\nMUSICA EXCLUIDA COM SUCESSO!\n");
 
 	fclose(fp);
 	system("pause");
