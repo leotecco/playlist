@@ -64,7 +64,7 @@ Artista retornaArtistaPorCodigo(int codigoArtista) {
 float verificarPorcentagemDeMusicasExcluidas() {
 	FILE *fp;
 	Musica musica;
-	float quantidadeDeMusicas = 0, quantidadeDeMusicasExcluidas = 0;
+	float quantidadeDeMusicas = 0, quantidadeDeMusicasExcluidas = 0, porcentagem;
 
 	fp = fopen("musicas.dat", "rb");
 
@@ -78,9 +78,9 @@ float verificarPorcentagemDeMusicasExcluidas() {
 
 	fclose(fp);
 
-	printf("\n\nOI: %f\n\n", quantidadeDeMusicasExcluidas / quantidadeDeMusicas);
+	porcentagem = (quantidadeDeMusicasExcluidas / quantidadeDeMusicas) * 100;
 
-	return (quantidadeDeMusicasExcluidas / quantidadeDeMusicas) * 100;
+	return porcentagem;
 }
 
 void reorganizarArquivoDeMusicas() {
@@ -221,7 +221,6 @@ void excluirMusica() {
 	Musica musica;
 	char tituloMusica[50];
 	int posicaoMusica = -1;
-	float porcentagemDeMusicasExcluidas;
 	
 	system("cls");
 	
@@ -252,14 +251,10 @@ void excluirMusica() {
 	printf("\nMUSICA EXCLUIDA COM SUCESSO!\n");
 
 	fclose(fp);
-
-	porcentagemDeMusicasExcluidas = verificarPorcentagemDeMusicasExcluidas();
 	
-	printf("PORCENTAGEM: %d\n", porcentagemDeMusicasExcluidas);
-	// if (porcentagemDeMusicasExcluidas > 20) {
-
-	// 	reorganizarArquivoDeMusicas();
-	// }
+	if (verificarPorcentagemDeMusicasExcluidas() > 20) {
+		reorganizarArquivoDeMusicas();
+	}
 
 	system("pause");
 }
