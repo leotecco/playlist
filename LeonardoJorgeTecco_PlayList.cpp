@@ -103,6 +103,49 @@ void reorganizarArquivoDeMusicas() {
 	rename("musicas.bak", "musicas.dat");
 }
 
+/**** PLAYLIST ****/
+
+void escolherMusica() {
+	FILE *fp = fopen("musicas.dat", "rb");
+	FILE *fpTxt = fopen("playlist.txt", "w");
+	Musica musica;
+	char tituloMusica[50];
+	int achouMusica = 0;
+
+	system("cls");
+	
+	puts("# ESCOLHER MUSICA\n\n");
+	
+	printf("TITULO: ");
+	fflush(stdin);
+	gets(tituloMusica);
+	strupr(tituloMusica);
+	
+	while (fread(&musica, sizeof(Musica), 1, fp) == 1) {
+		if (strcmp(tituloMusica, musica.titulo) == 0 && musica.exc != '*') {
+			achouMusica = 1;
+
+			Artista artista = retornaArtistaPorCodigo(musica.codArtista);
+
+			fprintf(fpTxt, "TITULO: %s - ESTILO: %s - NOME ARTISTA: %s\n", musica.titulo, musica.estilo, artista.nome);
+		}
+	}
+
+	if (achouMusica == 0) {
+		puts("\nMUSICA NAO ENCONTRADA!\n");
+	}
+	
+	system("pause");
+
+	fclose(fp);
+	fclose(fpTxt);
+
+	return;
+}
+
+void escolherArtista() {
+}
+
 /**** MUSICA ****/
 
 void cadastrarMusica() {
@@ -258,7 +301,6 @@ void excluirMusica() {
 
 	system("pause");
 }
-
 
 /**** ARTISTA ****/
 
@@ -460,7 +502,10 @@ void menuMusicas() {
 
 void menuPlaylist() {
 	int opcao = 0;
-	
+
+	FILE *fp = fopen("playlist.txt", "w");
+	fclose(fp);
+
 	do {
 		system("cls");
 		
@@ -476,6 +521,7 @@ void menuPlaylist() {
 		
 		switch (opcao) {
 			case 1:
+				escolherMusica();
 				break;
 			case 2:
 				break;
@@ -495,7 +541,7 @@ void menuPrincipal() {
 		puts("# PLAYLIST\n\n");
 		puts("1 - CADASTRO DE ARTISTAS");
 		puts("2 - CADASTRO DE MUSICAS");
-		puts("3 - PLAYLIST");
+		puts("3 - GERAR PLAYLIST");
 		puts("4 - SAIR\n\n");
 		
 		printf("SELECIONE A OPCAO: ");
