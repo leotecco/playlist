@@ -107,7 +107,7 @@ void reorganizarArquivoDeMusicas() {
 
 void escolherMusica() {
 	FILE *fp = fopen("musicas.dat", "rb");
-	FILE *fpTxt = fopen("playlist.txt", "w");
+	FILE *fpTxt = fopen("playlist.txt", "a");
 	Musica musica;
 	char tituloMusica[50];
 	int achouMusica = 0;
@@ -128,6 +128,7 @@ void escolherMusica() {
 			Artista artista = retornaArtistaPorCodigo(musica.codArtista);
 
 			fprintf(fpTxt, "TITULO: %s - ESTILO: %s - NOME ARTISTA: %s\n", musica.titulo, musica.estilo, artista.nome);
+			puts("\nMUSICAS ADICIONADA COM SUCESSO!\n");
 		}
 	}
 
@@ -144,6 +145,64 @@ void escolherMusica() {
 }
 
 void escolherArtista() {
+	FILE *fpArtistas = fopen("artistas.dat", "rb");
+	FILE *fpMusicas = fopen("musicas.dat", "rb");
+	FILE *fpTxt = fopen("playlist.txt", "a");
+	Artista artista;
+	Musica musica;
+	char nomeArtista[50];
+	
+	system("cls");
+	
+	puts("# CONSULTAR ARTISTA\n\n");
+	
+	printf("NOME: ");
+	fflush(stdin);
+	gets(nomeArtista);
+	strupr(nomeArtista);
+	
+	while (fread(&artista, sizeof(Artista), 1, fpArtistas) == 1) {
+		if (strcmp(nomeArtista, artista.nome) == 0) {
+			while (fread(&musica, sizeof(Musica), 1, fpMusicas) == 1) {
+				if (artista.codigo == musica.codArtista) {
+					fprintf(fpTxt, "TITULO: %s - ESTILO: %s - NOME ARTISTA: %s\n", musica.titulo, musica.estilo, artista.nome);
+				}
+			}
+
+			puts("\nMUSICAS DO ARTISTA ADICIONADAS COM SUCESSO!\n");
+
+			fclose(fpTxt);
+			fclose(fpArtistas);
+			fclose(fpMusicas);
+			system("pause");
+			return;
+		}
+	}
+
+	puts("\nARTISTA NAO ENCONTRADO!\n");
+	
+	fclose(fpTxt);
+	fclose(fpArtistas);
+	fclose(fpMusicas);
+	system("pause");
+	return;
+}
+
+void exibirPlaylist() {
+	FILE *fpTxt = fopen("playlist.txt", "r");
+	char musica[500];
+	
+	system("cls");
+	
+	puts("# VER PLAYLIST\n\n");
+	
+	while (fgets(musica, 500, fpTxt)) {
+		puts(musica);
+	}
+	
+	fclose(fpTxt);
+	system("pause");
+	return;
 }
 
 /**** MUSICA ****/
@@ -510,6 +569,7 @@ void menuPlaylist() {
 		system("cls");
 		
 		puts("# PLAYLIST\n\n");
+		puts("NOVA PLAYLIST GERADA!\n\n");
 		puts("1 - ESCOLHER MUSICA");
 		puts("2 - ESCOLHER ARTISTA");
 		puts("3 - VER PLAYLIST");
@@ -524,8 +584,10 @@ void menuPlaylist() {
 				escolherMusica();
 				break;
 			case 2:
+				escolherArtista();
 				break;
 			case 3:
+				exibirPlaylist();
 				break;
 		}
 		
